@@ -1,4 +1,5 @@
-﻿using GestionUsuarios.APPLICATION.Common.Interfaces;
+﻿using AutoMapper;
+using GestionUsuarios.APPLICATION.Common.Interfaces;
 using GestionUsuarios.DOMAIN.Dto;
 using GestionUsuarios.DOMAIN.Entities;
 using Microsoft.AspNetCore.Mvc;
@@ -8,9 +9,11 @@ namespace GestionUsuarios.API.Controllers;
 public class PersonasController : BaseApiController
 {
     private readonly IUnitOfWork _unitOfWork;
-    public PersonasController(IUnitOfWork unitOfWork)
+    private readonly IMapper _mapper;
+    public PersonasController(IUnitOfWork unitOfWork, IMapper mapper)
     {
         _unitOfWork = unitOfWork;
+        _mapper = mapper;
     }
 
     /// <summary>
@@ -87,23 +90,24 @@ public class PersonasController : BaseApiController
     /// <summary>
     /// Crea una nueva persona.
     /// </summary>
-    /// <param name="persona">La persona a crear.</param>
+    /// <param name="personaDto">La persona a crear.</param>
     /// <returns>Una respuesta HTTP con el resultado de la operación.</returns>
     [HttpPost]
-    public async Task<ActionResult<RespuestaDto>> Create([FromBody] Persona persona)
+    public async Task<ActionResult<RespuestaDto>> Create([FromBody] PersonaDto personaDto)
     {
         var respuesta = new RespuestaDto();
 
         try
         {
 
+            var persona = _mapper.Map<Persona>(personaDto);
             await _unitOfWork.PersonaRepository.Add(persona);
             await _unitOfWork.SaveChangesAsync();
 
             respuesta.Estado = "Éxito";
             respuesta.Mensaje = "Persona creado correctamente";
             respuesta.Ok = true;
-            respuesta.Datos = persona;
+            respuesta.Datos = personaDto;
 
             return Ok(respuesta);
         }
@@ -124,7 +128,7 @@ public class PersonasController : BaseApiController
     /// <param name="persona">El objeto Usuario con los datos actualizados.</param>
     /// <returns>Una respuesta HTTP con el resultado de la operación.</returns>
     [HttpPut("{id}")]
-    public async Task<ActionResult<RespuestaDto>> Update(int id, [FromBody] Persona persona)
+    public async Task<ActionResult<RespuestaDto>> Update(int id, [FromBody] PersonaDto personaDto)
     {
         var respuesta = new RespuestaDto();
 
@@ -141,12 +145,12 @@ public class PersonasController : BaseApiController
                 return NotFound(respuesta);
             }
 
-            personaExistente.Nombres = persona.Nombres;
-            personaExistente.Apellidos = persona.Apellidos;
-            personaExistente.NumeroIdentificacion = persona.NumeroIdentificacion;
+            personaExistente.Nombres = personaDto.Nombres;
+            personaExistente.Apellidos = personaDto.Apellidos;
+            personaExistente.NumeroIdentificacion = personaDto.NumeroIdentificacion;
 
-            personaExistente.Email = persona.Email;
-            personaExistente.TipoIdentificacion = persona.TipoIdentificacion;
+            personaExistente.Email = personaDto.Email;
+            personaExistente.TipoIdentificacion = personaDto.TipoIdentificacion;
             personaExistente.FechaCreacion = DateTime.Now;
 
             _unitOfWork.PersonaRepository.Update(personaExistente);

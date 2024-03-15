@@ -15,4 +15,5 @@ public interface IUnitOfWork
     DatabaseFacade Database { get; }
     IUsuarioRepository UsuarioRepository { get; }
     IPersonaRepository PersonaRepository { get; }
+    ITipoDocumentoRepository TipoDocumentoRepository { get; }
 }

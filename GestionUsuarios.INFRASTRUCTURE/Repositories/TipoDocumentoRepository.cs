@@ -4,15 +4,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GestionUsuarios.INFRASTRUCTURE.Repositories;
 
-public class PersonaRepository : BaseRepository<Persona>, IPersonaRepository
+public class TipoDocumentoRepository : BaseRepository<TipoDocumento>, ITipoDocumentoRepository
 {
     private readonly DbContext _dbContext;
 
-    public PersonaRepository(DbContext dbContext) : base(dbContext)
+    public TipoDocumentoRepository(DbContext dbContext) : base(dbContext)
     {
         _dbContext = dbContext;
     }
-
-
-
 }

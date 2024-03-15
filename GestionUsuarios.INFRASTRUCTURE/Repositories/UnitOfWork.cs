@@ -19,6 +19,8 @@ public class UnitOfWork : IUnitOfWork
 
     public IPersonaRepository PersonaRepository => new PersonaRepository(_context);
 
+    public ITipoDocumentoRepository TipoDocumentoRepository => new TipoDocumentoRepository(_context);
+
     public void SaveChanges()
     {
         _context.SaveChanges();

@@ -18,7 +18,10 @@ public partial class BdContext : DbContext
 
     public virtual DbSet<Persona> Personas { get; set; }
 
+    public virtual DbSet<TipoDocumento> TipoDocumentos { get; set; }
+
     public virtual DbSet<Usuario> Usuarios { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -51,6 +54,18 @@ public partial class BdContext : DbContext
                 .IsUnicode(false);
         });
 
+        modelBuilder.Entity<TipoDocumento>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__TipoDocu__3214EC27562ECE44");
+
+            entity.ToTable("TipoDocumento");
+
+            entity.Property(e => e.Id).HasColumnName("ID");
+            entity.Property(e => e.Nombre)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+        });
+
         modelBuilder.Entity<Usuario>(entity =>
         {
             entity.HasKey(e => e.Identificador).HasName("PK__Usuario__F2374EB1C61F89A0");
@@ -61,7 +76,7 @@ public partial class BdContext : DbContext
             entity.Property(e => e.Pass)
                 .HasMaxLength(50)
                 .IsUnicode(false);
-            entity.Property(e => e.Usuario1)
+            entity.Property(e => e.UsuarioNombre)
                 .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("Usuario");
