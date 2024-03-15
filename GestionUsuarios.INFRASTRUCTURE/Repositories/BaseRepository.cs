@@ -1,6 +1,7 @@
 ﻿using GestionUsuarios.APPLICATION.Common.Exceptions;
 using GestionUsuarios.APPLICATION.Common.Interfaces.Repository;
 using GestionUsuarios.INFRASTRUCTURE.Common.Static;
+using GestionUsuarios.INFRASTRUCTURE.Context;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
@@ -28,6 +29,12 @@ public class BaseRepository<T> : IRepository<T> where T : class
     }
 
     public async Task<T?> GetById(int id) => await _entities.FindAsync(id);
+
+    public virtual IEnumerable<T> Find(Expression<Func<T, bool>> expression, bool noTracking = true)
+    {
+        IQueryable<T> query = noTracking ? _entities.AsNoTracking() : _entities;
+        return query.Where(expression).ToList();
+    }
 
     public async Task<T?> Get(Expression<Func<T, bool>> predicate)
     {
@@ -63,4 +70,6 @@ public class BaseRepository<T> : IRepository<T> where T : class
             throw new GeneralException($"{BaseRepositoryMessages.ERRBSRPSTR01}, ExMessage: {ex.Message}");
         }
     }
+
+    
 }

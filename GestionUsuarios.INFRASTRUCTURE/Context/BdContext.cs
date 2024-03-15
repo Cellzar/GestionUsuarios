@@ -68,13 +68,12 @@ public partial class BdContext : DbContext
 
         modelBuilder.Entity<Usuario>(entity =>
         {
-            entity.HasKey(e => e.Identificador).HasName("PK__Usuario__F2374EB1C61F89A0");
+            entity.HasKey(e => e.Identificador).HasName("PK__Usuario__F2374EB10A2603B7");
 
             entity.ToTable("Usuario");
 
-            entity.Property(e => e.Identificador).ValueGeneratedNever();
             entity.Property(e => e.Pass)
-                .HasMaxLength(50)
+                .HasMaxLength(100)
                 .IsUnicode(false);
             entity.Property(e => e.UsuarioNombre)
                 .HasMaxLength(50)

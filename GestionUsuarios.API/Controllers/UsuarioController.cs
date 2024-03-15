@@ -1,16 +1,22 @@
-﻿using AutoMapper;
-using GestionUsuarios.APPLICATION.Common.Interfaces;
+﻿using GestionUsuarios.APPLICATION.Services;
+using GestionUsuarios.DOMAIN.Dto;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GestionUsuarios.API.Controllers;
 
 public class UsuarioController : BaseApiController
 {
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly IMapper _mapper;
-    public UsuarioController(IUnitOfWork unitOfWork, IMapper mapper)
+    private readonly IUsuarioService _userService;
+
+    public UsuarioController(IUsuarioService userService)
     {
-        _unitOfWork = unitOfWork;
-        _mapper = mapper;
+        _userService = userService;
+    }
+
+    [HttpPost("registrar")]
+    public async Task<ActionResult> RegisterAsync(UsuarioDto model)
+    {
+        var result = await _userService.RegisterAsync(model);
+        return Ok(result);
     }
 }

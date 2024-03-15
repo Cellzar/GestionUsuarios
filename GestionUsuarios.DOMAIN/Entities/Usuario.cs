@@ -11,5 +11,5 @@ public partial class Usuario
 
     public string? Pass { get; set; }
 
-    public DateOnly? FechaCreacion { get; set; }
+    public DateTime FechaCreacion { get; set; }
 }

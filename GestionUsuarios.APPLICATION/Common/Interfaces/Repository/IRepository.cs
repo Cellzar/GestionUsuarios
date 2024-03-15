@@ -12,6 +12,7 @@ public interface IRepository<T> where T : class
     Task<List<T>> GetAll();
     Task<List<T>> GetAll(Expression<Func<T, bool>> predicate);
     Task<T?> GetById(int id);
+    IEnumerable<T> Find(Expression<Func<T, bool>> expression, bool noTracking = true);
     Task<T?> Get(Expression<Func<T, bool>> predicate);
     Task Add(T entity);
     void Update(T entity);

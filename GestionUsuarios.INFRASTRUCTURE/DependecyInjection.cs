@@ -1,9 +1,13 @@
 ﻿using GestionUsuarios.APPLICATION.Common.Interfaces;
+using GestionUsuarios.APPLICATION.Services;
+using GestionUsuarios.DOMAIN.Entities;
 using GestionUsuarios.INFRASTRUCTURE.Context;
 using GestionUsuarios.INFRASTRUCTURE.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Identity;
+
 
 namespace GestionUsuarios.INFRASTRUCTURE;
 
@@ -34,7 +38,9 @@ public static class DependecyInjection
                     .WithOrigins(listOrigin.ToArray()));
         });
 
+        services.AddScoped<IPasswordHasher<Usuario>, PasswordHasher<Usuario>>();
         services.AddTransient<IUnitOfWork, UnitOfWork>();
+        services.AddScoped<IUsuarioService, UsuarioService>();
         return services;
     }
 }
