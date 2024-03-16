@@ -15,6 +15,8 @@ builder.Services.AddAutoMapper(Assembly.GetEntryAssembly());
 
 builder.Services.AddDbContext(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddJwt(builder.Configuration);
+
 
 var app = builder.Build();
 
