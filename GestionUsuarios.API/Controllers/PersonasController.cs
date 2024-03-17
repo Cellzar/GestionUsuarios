@@ -2,10 +2,12 @@
 using GestionUsuarios.APPLICATION.Common.Interfaces;
 using GestionUsuarios.DOMAIN.Dto;
 using GestionUsuarios.DOMAIN.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GestionUsuarios.API.Controllers;
 
+[Authorize]
 public class PersonasController : BaseApiController
 {
     private readonly IUnitOfWork _unitOfWork;

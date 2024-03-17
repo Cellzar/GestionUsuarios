@@ -1,6 +1,7 @@
 ﻿using GestionUsuarios.APPLICATION.Common.Interfaces;
 using GestionUsuarios.DOMAIN.Dto;
 using GestionUsuarios.DOMAIN.Entities;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -39,14 +40,9 @@ public class UsuarioService : IUsuarioService
 
         if (resultado == usuario.Pass)
         {
-            datosUsuarioDto.Token = GenerateTokenJwt(usuario.UsuarioNombre);
+            datosUsuarioDto.Token = GenerateToken(usuario.UsuarioNombre);
 
             datosUsuarioDto.Mensaje = "Ingresado Correctamente";
-            var refreshToken = CreateRefreshToken();
-            _unitOfWork.UsuarioRepository.Update(usuario);
-            await _unitOfWork.SaveChangesAsync();
-            
-
             return datosUsuarioDto;
         }
         datosUsuarioDto.Mensaje = $"Credenciales incorrectas para el usuario {usuario.UsuarioNombre}.";
@@ -92,53 +88,21 @@ public class UsuarioService : IUsuarioService
         }
     }
 
-    public string GenerateTokenJwt(string username)
+    public string GenerateToken(string username)
     {
-        byte[] keyBytes = GenerateRandomKey(32);
-
-        string secretKey = Convert.ToBase64String(keyBytes);
-
-        var securityKey = new SymmetricSecurityKey(keyBytes);
-        var signingCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-
-        ClaimsIdentity claimsIdentity = new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, username) });
-
         var tokenHandler = new JwtSecurityTokenHandler();
-        var jwtSecurityToken = tokenHandler.CreateJwtSecurityToken(
-            audience: _jwt.Audience,
-            issuer: _jwt.Issuer,
-            subject: claimsIdentity,
-            notBefore: DateTime.UtcNow,
-            expires: DateTime.UtcNow.AddMinutes(_jwt.DurationInMinutes),
-            signingCredentials: signingCredentials);
-
-        return tokenHandler.WriteToken(jwtSecurityToken);
-    }
-
-    static byte[] GenerateRandomKey(int length)
-    {
-        using (var rng = new RNGCryptoServiceProvider())
+        var key = Encoding.ASCII.GetBytes(_jwt.Key);
+        var tokenDescriptor = new SecurityTokenDescriptor
         {
-            byte[] key = new byte[length];
-            rng.GetBytes(key);
-            return key;
-        }
-    }
-
-
-    private RefreshToken CreateRefreshToken()
-    {
-        var randomNumber = new byte[32];
-        using (var generator = RandomNumberGenerator.Create())
-        {
-            generator.GetBytes(randomNumber);
-            return new RefreshToken
+            Subject = new ClaimsIdentity(new Claim[]
             {
-                Token = Convert.ToBase64String(randomNumber),
-                Expires = DateTime.UtcNow.AddDays(10),
-                Created = DateTime.UtcNow
-            };
-        }
+                new Claim(ClaimTypes.Name, username)
+            }),
+            Expires = DateTime.UtcNow.AddHours(1),
+            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+        };
+        var token = tokenHandler.CreateToken(tokenDescriptor);
+        return tokenHandler.WriteToken(token);
     }
 
     public async Task<ActionResult<RespuestaDto>> Get()

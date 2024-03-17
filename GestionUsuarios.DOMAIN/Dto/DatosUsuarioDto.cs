@@ -4,5 +4,5 @@ public class DatosUsuarioDto
 {
     public string Usuario { get; set; }
     public string Mensaje { get; set; }
-    public string Token { get; set; }
+    public object Token { get; set; }
 }

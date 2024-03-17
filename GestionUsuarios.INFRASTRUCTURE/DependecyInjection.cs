@@ -49,30 +49,26 @@ public static class DependecyInjection
 
     public static void AddJwt(this IServiceCollection services, IConfiguration configuration)
     {
-        //Configuration from AppSettings
+        // Configuration from AppSettings
         services.Configure<JWT>(configuration.GetSection("JWT"));
 
-        //Adding Athentication - JWT
-        services.AddAuthentication(options =>
+        // Adding Authentication - JWT
+        services.AddAuthentication("Bearer")
+        .AddJwtBearer(o =>
         {
-            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-        })
-            .AddJwtBearer(o =>
+
+            var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Key"]));
+            var signingCredencials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256Signature);
+            o.RequireHttpsMetadata = false;
+
+            
+            o.RequireHttpsMetadata = false;
+            o.TokenValidationParameters = new TokenValidationParameters()
             {
-                o.RequireHttpsMetadata = false;
-                o.SaveToken = false;
-                o.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuerSigningKey = true,
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                    ClockSkew = TimeSpan.Zero,
-                    ValidIssuer = configuration["JWT:Issuer"],
-                    ValidAudience = configuration["JWT:Audience"],
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Key"]))
-                };
-            });
+                ValidateAudience = false,
+                ValidateIssuer = false,
+                IssuerSigningKey = signingKey
+            };
+        });
     }
 }
