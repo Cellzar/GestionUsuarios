@@ -7,8 +7,8 @@ public interface IUsuarioService
 {
     Task<RespuestaDto> RegisterAsync(UsuarioDto model);
     Task<DatosUsuarioDto> GetTokenAsync(UsuarioDto model);
-    Task<ActionResult<RespuestaDto>> Get();
-    Task<ActionResult<RespuestaDto>> GetById(int id);
-    Task<ActionResult<RespuestaDto>> Update(int id, [FromBody] UsuarioDto usuarioDto);
-    Task<ActionResult<RespuestaDto>> Delete(int id);
+    Task<RespuestaDto> Get();
+    Task<RespuestaDto> GetById(int id);
+    Task<RespuestaDto> Update(int id, [FromBody] UsuarioDto usuarioDto);
+    Task<RespuestaDto> Delete(int id);
 }

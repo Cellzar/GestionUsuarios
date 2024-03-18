@@ -8,11 +8,9 @@ namespace GestionUsuarios.API.Controllers;
 public class UsuarioController : BaseApiController
 {
     private readonly IUsuarioService _userService;
-    private readonly IUnitOfWork _unitOfWork;
-    public UsuarioController(IUsuarioService userService, IUnitOfWork unitOfWork)
+    public UsuarioController(IUsuarioService userService)
     {
         _userService = userService;
-        _unitOfWork = unitOfWork;
     }
 
     /// <summary>

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using GestionUsuarios.APPLICATION.Common.Interfaces;
+using GestionUsuarios.APPLICATION.Services;
 using GestionUsuarios.DOMAIN.Dto;
 using GestionUsuarios.DOMAIN.Entities;
 using Microsoft.AspNetCore.Authorization;
@@ -10,11 +11,11 @@ namespace GestionUsuarios.API.Controllers;
 [Authorize]
 public class PersonasController : BaseApiController
 {
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly PersonaService _personaService;
     private readonly IMapper _mapper;
-    public PersonasController(IUnitOfWork unitOfWork, IMapper mapper)
+    public PersonasController(PersonaService personaService, IMapper mapper)
     {
-        _unitOfWork = unitOfWork;
+        _personaService = personaService;
         _mapper = mapper;
     }
 
@@ -25,27 +26,8 @@ public class PersonasController : BaseApiController
     [HttpGet]
     public async Task<ActionResult<RespuestaDto>> Get()
     {
-        var respuesta = new RespuestaDto();
-
-        try
-        {
-            var datos = await _unitOfWork.PersonaRepository.GetAll();
-
-            respuesta.Estado = "Éxito";
-            respuesta.Mensaje = "Datos obtenidos correctamente";
-            respuesta.Ok = true;
-            respuesta.Datos = datos;
-
-            return Ok(respuesta);
-        }
-        catch (Exception ex)
-        {
-            respuesta.Estado = "Error";
-            respuesta.Mensaje = "Ha ocurrido un error al obtener los datos" + ex.Message;
-            respuesta.Ok = false;
-            respuesta.Datos = null;
-            return StatusCode(500, respuesta);
-        }
+        var result = await _personaService.Get();
+        return Ok(result);
     }
 
     /// <summary>
@@ -56,36 +38,8 @@ public class PersonasController : BaseApiController
     [HttpGet("{id}")]
     public async Task<ActionResult<RespuestaDto>> GetById(int id)
     {
-        var respuesta = new RespuestaDto();
-
-        try
-        {
-            var persona = await _unitOfWork.PersonaRepository.GetById(id);
-
-            if (persona == null)
-            {
-                respuesta.Estado = "Error";
-                respuesta.Mensaje = $"Persona con ID {id} no encontrado";
-                respuesta.Ok = false;
-                respuesta.Datos = null;
-                return NotFound(respuesta);
-            }
-
-            respuesta.Estado = "Éxito";
-            respuesta.Mensaje = "Persona encontrado correctamente";
-            respuesta.Ok = true;
-            respuesta.Datos = persona;
-
-            return Ok(respuesta);
-        }
-        catch (Exception ex)
-        {
-            respuesta.Estado = "Error";
-            respuesta.Mensaje = $"Ha ocurrido un error al obtener la persona con ID {id}: {ex.Message}";
-            respuesta.Ok = false;
-            respuesta.Datos = null;
-            return StatusCode(500, respuesta);
-        }
+        var result = await _personaService.GetById(id);
+        return Ok(result);
     }
 
 
@@ -97,30 +51,9 @@ public class PersonasController : BaseApiController
     [HttpPost]
     public async Task<ActionResult<RespuestaDto>> Create([FromBody] PersonaDto personaDto)
     {
-        var respuesta = new RespuestaDto();
-
-        try
-        {
-
-            var persona = _mapper.Map<Persona>(personaDto);
-            await _unitOfWork.PersonaRepository.Add(persona);
-            await _unitOfWork.SaveChangesAsync();
-
-            respuesta.Estado = "Éxito";
-            respuesta.Mensaje = "Persona creado correctamente";
-            respuesta.Ok = true;
-            respuesta.Datos = personaDto;
-
-            return Ok(respuesta);
-        }
-        catch (Exception ex)
-        {
-            respuesta.Estado = "Error";
-            respuesta.Mensaje = "Ha ocurrido un error al crear la persona : " + ex.Message;
-            respuesta.Ok = false;
-            respuesta.Datos = null;
-            return StatusCode(500, respuesta);
-        }
+        var persona = _mapper.Map<Persona>(personaDto);
+        var result = await _personaService.Create(persona);
+        return Ok(result);
     }
 
     /// <summary>
@@ -132,47 +65,8 @@ public class PersonasController : BaseApiController
     [HttpPut("{id}")]
     public async Task<ActionResult<RespuestaDto>> Update(int id, [FromBody] PersonaDto personaDto)
     {
-        var respuesta = new RespuestaDto();
-
-        try
-        {
-            var personaExistente = await _unitOfWork.PersonaRepository.GetById(id);
-
-            if (personaExistente == null)
-            {
-                respuesta.Estado = "Error";
-                respuesta.Mensaje = $"persona con ID {id} no encontrado";
-                respuesta.Ok = false;
-                respuesta.Datos = null;
-                return NotFound(respuesta);
-            }
-
-            personaExistente.Nombres = personaDto.Nombres;
-            personaExistente.Apellidos = personaDto.Apellidos;
-            personaExistente.NumeroIdentificacion = personaDto.NumeroIdentificacion;
-
-            personaExistente.Email = personaDto.Email;
-            personaExistente.TipoIdentificacion = personaDto.TipoIdentificacion;
-            personaExistente.FechaCreacion = DateTime.Now;
-
-            _unitOfWork.PersonaRepository.Update(personaExistente);
-            await _unitOfWork.SaveChangesAsync();
-
-            respuesta.Estado = "Éxito";
-            respuesta.Mensaje = $"persona con ID {id} actualizado correctamente";
-            respuesta.Ok = true;
-            respuesta.Datos = personaExistente;
-
-            return Ok(respuesta);
-        }
-        catch (Exception ex)
-        {
-            respuesta.Estado = "Error";
-            respuesta.Mensaje = $"Ha ocurrido un error al actualizar la persona con ID {id}: {ex.Message}";
-            respuesta.Ok = false;
-            respuesta.Datos = null;
-            return StatusCode(500, respuesta);
-        }
+        var result = await _personaService.Update(id, personaDto);
+        return Ok(result);
     }
 
     /// <summary>
@@ -183,38 +77,7 @@ public class PersonasController : BaseApiController
     [HttpDelete("{id}")]
     public async Task<ActionResult<RespuestaDto>> Delete(int id)
     {
-        var respuesta = new RespuestaDto();
-
-        try
-        {
-            var usuarioExistente = await _unitOfWork.PersonaRepository.GetById(id);
-
-            if (usuarioExistente == null)
-            {
-                respuesta.Estado = "Error";
-                respuesta.Mensaje = $"persona con ID {id} no encontrado";
-                respuesta.Ok = false;
-                respuesta.Datos = null;
-                return NotFound(respuesta);
-            }
-
-            _unitOfWork.PersonaRepository.Delete(id);
-            await _unitOfWork.SaveChangesAsync();
-
-            respuesta.Estado = "Éxito";
-            respuesta.Mensaje = $"persona con ID {id} eliminado correctamente";
-            respuesta.Ok = true;
-            respuesta.Datos = null;
-
-            return Ok(respuesta);
-        }
-        catch (Exception ex)
-        {
-            respuesta.Estado = "Error";
-            respuesta.Mensaje = $"Ha ocurrido un error al eliminar la persona con ID {id}: {ex.Message}";
-            respuesta.Ok = false;
-            respuesta.Datos = null;
-            return StatusCode(500, respuesta);
-        }
+        var result = await _personaService.Delete(id);
+        return Ok(result);
     }
 }

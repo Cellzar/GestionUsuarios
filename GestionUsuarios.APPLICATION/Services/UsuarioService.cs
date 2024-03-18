@@ -1,14 +1,11 @@
 ﻿using GestionUsuarios.APPLICATION.Common.Interfaces;
 using GestionUsuarios.DOMAIN.Dto;
 using GestionUsuarios.DOMAIN.Entities;
-using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
 namespace GestionUsuarios.APPLICATION.Services;
 
@@ -105,7 +102,7 @@ public class UsuarioService : IUsuarioService
         return tokenHandler.WriteToken(token);
     }
 
-    public async Task<ActionResult<RespuestaDto>> Get()
+    public async Task<RespuestaDto> Get()
     {
         var respuesta = new RespuestaDto();
 
@@ -128,7 +125,7 @@ public class UsuarioService : IUsuarioService
         return respuesta;
     }
 
-    public async Task<ActionResult<RespuestaDto>> GetById(int id)
+    public async Task<RespuestaDto> GetById(int id)
     {
         var respuesta = new RespuestaDto();
 
@@ -158,7 +155,7 @@ public class UsuarioService : IUsuarioService
         return respuesta;
     }
 
-    public async Task<ActionResult<RespuestaDto>> Update(int id, [FromBody] UsuarioDto usuarioDto)
+    public async Task<RespuestaDto> Update(int id, [FromBody] UsuarioDto usuarioDto)
     {
         var respuesta = new RespuestaDto();
 
@@ -173,17 +170,34 @@ public class UsuarioService : IUsuarioService
                 respuesta.Ok = false;
             }
 
-            PasswordService passwordService = new PasswordService();
-            usuarioExistente.UsuarioNombre = usuarioDto.UsuarioNombre;
-            usuarioExistente.Pass = passwordService.EncodePasswordToBase64(usuarioDto.Pass);
+            var usuarioExiste = _unitOfWork.UsuarioRepository
+                                    .Find(u => u.UsuarioNombre.ToLower() == usuarioDto.UsuarioNombre.ToLower())
+                                    .FirstOrDefault();
 
-            _unitOfWork.UsuarioRepository.Update(usuarioExistente);
-            await _unitOfWork.SaveChangesAsync();
+            if (usuarioExiste != null)
+            {
+                PasswordService passwordService = new PasswordService();
+                usuarioExistente.UsuarioNombre = usuarioDto.UsuarioNombre;
+                usuarioExistente.Pass = passwordService.EncodePasswordToBase64(usuarioDto.Pass);
 
-            respuesta.Estado = "Éxito";
-            respuesta.Mensaje = $"usuario con ID {id} actualizado correctamente";
-            respuesta.Ok = true;
-            respuesta.Datos = usuarioExistente;
+                _unitOfWork.UsuarioRepository.Update(usuarioExistente);
+                await _unitOfWork.SaveChangesAsync();
+
+                respuesta.Estado = "Éxito";
+                respuesta.Mensaje = $"usuario con ID {id} actualizado correctamente";
+                respuesta.Ok = true;
+                respuesta.Datos = usuarioExistente;
+            }
+            else
+            {
+                respuesta.Estado = "Éxito";
+                respuesta.Mensaje = $"El usuario con {usuarioDto.UsuarioNombre} ya se encuentra registrado.";
+                respuesta.Ok = false;
+
+                return respuesta;
+            }
+
+            
 
         }
         catch (Exception ex)
@@ -196,7 +210,7 @@ public class UsuarioService : IUsuarioService
         return respuesta;
     }
 
-    public async Task<ActionResult<RespuestaDto>> Delete(int id)
+    public async Task<RespuestaDto> Delete(int id)
     {
         var respuesta = new RespuestaDto();
 

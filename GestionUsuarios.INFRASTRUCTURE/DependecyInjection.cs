@@ -43,7 +43,9 @@ public static class DependecyInjection
         });
 
         services.AddTransient<IUnitOfWork, UnitOfWork>();
+        services.AddScoped<PersonaService>();
         services.AddScoped<IUsuarioService, UsuarioService>();
+        services.AddScoped<IPersonaService, PersonaService>();
         return services;
     }
 
