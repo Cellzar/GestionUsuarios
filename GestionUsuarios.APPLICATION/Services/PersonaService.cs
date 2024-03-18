@@ -23,13 +23,29 @@ public class PersonaService : IPersonaService
 
         try
         {
-            await _unitOfWork.PersonaRepository.Add(personaDto);
-            await _unitOfWork.SaveChangesAsync();
+            var personaExistente = _unitOfWork.PersonaRepository.Find(c =>
+                                                                        c.NumeroIdentificacion == personaDto.NumeroIdentificacion
+                                                                        && c.TipoIdentificacion.ToLower() == personaDto.TipoIdentificacion.ToLower())
+                                                                        .SingleOrDefault();
 
-            respuesta.Estado = "Éxito";
-            respuesta.Mensaje = "Persona creado correctamente";
-            respuesta.Ok = true;
-            respuesta.Datos = personaDto;
+
+            if (personaExistente == null)
+            {
+                await _unitOfWork.PersonaRepository.Add(personaDto);
+                await _unitOfWork.SaveChangesAsync();
+
+                respuesta.Estado = "Éxito";
+                respuesta.Mensaje = "Persona creado correctamente";
+                respuesta.Ok = true;
+                respuesta.Datos = personaDto;
+            }
+            else
+            {
+                respuesta.Estado = "Éxito";
+                respuesta.Mensaje = "La persona ya esta registrada con esos documentos";
+                respuesta.Ok = true;
+            }
+            
         }
         catch (Exception ex)
         {
@@ -174,21 +190,35 @@ public class PersonaService : IPersonaService
                 respuesta.Ok = false;
             }
 
-            personaExistente.Nombres = personaDto.Nombres;
-            personaExistente.Apellidos = personaDto.Apellidos;
-            personaExistente.NumeroIdentificacion = personaDto.NumeroIdentificacion;
+            var personaExistentePorIden = _unitOfWork.PersonaRepository.Find(c =>
+                                                                        c.NumeroIdentificacion == personaDto.NumeroIdentificacion
+                                                                        && c.TipoIdentificacion.ToLower() == personaDto.TipoIdentificacion.ToLower())
+                                                                        .SingleOrDefault();
 
-            personaExistente.Email = personaDto.Email;
-            personaExistente.TipoIdentificacion = personaDto.TipoIdentificacion;
-            personaExistente.FechaCreacion = DateTime.Now;
+            if (personaExistente != null)
+            {
+                personaExistente.Nombres = personaDto.Nombres;
+                personaExistente.Apellidos = personaDto.Apellidos;
+                personaExistente.NumeroIdentificacion = personaDto.NumeroIdentificacion;
 
-            _unitOfWork.PersonaRepository.Update(personaExistente);
-            await _unitOfWork.SaveChangesAsync();
+                personaExistente.Email = personaDto.Email;
+                personaExistente.TipoIdentificacion = personaDto.TipoIdentificacion;
+                personaExistente.FechaCreacion = DateTime.Now;
 
-            respuesta.Estado = "Éxito";
-            respuesta.Mensaje = $"persona con ID {id} actualizado correctamente";
-            respuesta.Ok = true;
-            respuesta.Datos = personaExistente;
+                _unitOfWork.PersonaRepository.Update(personaExistente);
+                await _unitOfWork.SaveChangesAsync();
+
+                respuesta.Estado = "Éxito";
+                respuesta.Mensaje = $"persona con ID {id} actualizado correctamente";
+                respuesta.Ok = true;
+                respuesta.Datos = personaExistente;
+            }
+            else
+            {
+                respuesta.Estado = "Éxito";
+                respuesta.Mensaje = "La persona ya esta registrada con esos documentos";
+                respuesta.Ok = true;
+            }
         }
         catch (Exception ex)
         {

@@ -14,7 +14,7 @@ public partial class Persona
 
     public string? TipoIdentificacion { get; set; }
 
-    public DateTime? FechaCreacion { get; set; }
+    public DateTime? FechaCreacion { get; set; } = DateTime.Now;
 
     public string NumeroIdentificacionConcatenado { get; set; } = null!;
 
